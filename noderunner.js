@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 (function(){
     var parent = this;
+    var util = require('util');
 
     // Object for storing things persistently between commands
     var persistent = {};
+    // object containing imported modules
+    var m = {};
 
     var stdin = process.openStdin();
     var stdout = process.stdout;
 
     // send stdout to stderr which we don't care about...
     process.stdout = process.stderr;
+    console.log = function() {
+         process.stderr.write(util.format.apply(this, arguments) + '\n');
+    }
 
-    stdout.setEncoding("utf8")
-    stdin.setEncoding("utf8")
+    stdout.setEncoding("utf8");
+    stdin.setEncoding("utf8");
 
     var message_separator = '\0';
 
@@ -24,6 +30,16 @@
         stdout.write(create_packet(obj));
     };
 
+    var traverse_js = function(path) {
+        if( typeof path === 'string' ) {
+            path = path.split(".");
+        }
+        start = eval(path.shift());
+        return path.reduce(function(obj,part){
+            return obj[part];
+        },start);
+    }
+
     var command_table = {
         "echo": function(data) { return data },
         "eval": function(data) {
@@ -33,9 +49,33 @@
             return wrapper.apply({});
         },
         "get": function(data) {
-            data.split(".").reduce(function(obj,a){
-                return obj[a];
-            },parent);
+            return traverse_js(data);
+        },
+        "require": function(data) {
+            if(typeof data == "string") {
+                m[data] = require(data);
+                return true;
+            } else {
+                m[data[0]] = require(data[1]);
+                return true;
+            }
+        },
+        "call": function(data) {
+            var obj = traverse_js(data.path);
+            
+            if(obj.apply == null) {
+                throw new Error("Is not callable");
+            }
+
+            if ( typeof data.path === 'string') {
+                path = data.path.split(".");
+            }
+
+            var lp = path.concat();
+            lp.splice(path.length - 1,1);
+            
+            var  par = traverse_js(lp);
+            return obj.apply(par,data.args);
         }
     }
 
@@ -43,11 +83,11 @@
         var cmd_id = obj['id'] || null;
         try {
             if(!obj.kind) {
-                throw "Missing required parameter kind";
+                throw new Error("Missing required parameter kind");
             }
             write_object({resp_to: cmd_id, data: command_table[obj.kind](obj.data) });
         } catch (e) {
-            write_object({resp_to: cmd_id, err: e});
+            write_object({resp_to: cmd_id, err: {"message": e.message,"kind": e.name}});
         }
     }
 

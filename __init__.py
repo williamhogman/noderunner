@@ -71,8 +71,8 @@ class Node(object):
                     resp(err=obj['err'])
                 elif 'data' in obj:
                     resp(data=obj['data'])
-                elif 'status' in obj:
-                    self._status = True
+            elif 'status' in obj:
+                self._status = True
             
             
     def _write_msg(self,kind,data,callback):
@@ -81,14 +81,34 @@ class Node(object):
         self._resp_handlers[c] = callback
         self._np.send(dict(id=c,kind=kind,data=data))
 
-    def eval(self,js,callback):
+    def _mkcb(self,actual_cb):
         def _inner(data=None,err=None):
             if err:
-                callback(err=err)
+                actual_cb(err=err)
             else:
-                callback(data)
-                
-        self._write_msg('eval',js,_inner)
+                actual_cb(data)
+        return _inner
+        
+    def eval(self,js,callback):
+        # If we got a bunch of whitespace don't send it...
+        if not js.strip():
+            callback(None)
+            return
+        self._write_msg('eval',js,self._mkcb(callback))
+        
+    def call(self,fn,args,callback):
+        if not fn.strip():
+            callback(None)
+            return
+        self._write_msg('call',dict(path=fn,args=args),self._mkcb(callback))
+        
+
+    def require(self,name,path=None,callback=None):
+        if path is None:
+            sendobj = name
+        else:
+            sendobj = [name,path]
+        self._write_msg('require',sendobj,self._mkcb(callback))
 
     def run(self):
         if not self._running:
@@ -96,17 +116,49 @@ class Node(object):
             self._running = True
     
 class BlockingNode(object):
+    _instance = None
     def __init__(self):
         self._node = Node()
         self.il = tornado.ioloop.IOLoop.instance()
         self._results = None
 
+    def _cb(self,data=None,err=None):
+        self._results = (data,err)
+        self.il.stop()
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = BlockingNode()
+        return cls._instance
+
+    def wait(self):
+        self.il.start()
+
     def eval(self,code):
         self._node.run()
-        def _cb(data=None,err=None):
-            self._results = (data,err)
-            self.il.stop()
-            
-        self._node.eval(code,callback=_cb)
-        self.il.start()
+        self._node.eval(code,callback=self._cb)
+
+        self.wait()
         return self._results
+
+    def call(self,name,*args):
+        self._node.run()
+        self._node.call(name,args,callback=self._cb)
+        self.wait()
+        return self._results
+
+    def require(self,name,path=None):
+        self._node.run()
+        self._node.require(name,path,callback=self._cb)
+        self.wait()
+        return self._results
+
+def call(*args,**kwargs):
+    return BlockingNode.instance().call(*args,**kwargs)
+
+def eval(*args,**kwargs):
+    return BlockingNode.instance().eval(*args,**kwargs)
+
+def require(*args,**kwargs):
+    return BlockingNode.instance().require(*args,**kwargs)
