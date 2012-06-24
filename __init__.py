@@ -2,6 +2,7 @@
 Python module for running node.js code from python
 """
 import subprocess
+import os
 import os.path
 import json
 import threading
@@ -25,7 +26,11 @@ class NodeProcess(object):
         self._bfr = str()
         self._ioloop = ioloop
         self._callback = callback
-
+        folder = os.path.join(_folder,"..","..",
+                              "virtualenv","lib",
+                              "node_modules")
+        folder = os.path.abspath(folder)
+        os.environ['NODE_PATH'] = ":".join(os.environ['NODE_PATH'].split(":")+[folder])
     def launch(self):
         self._proc = subprocess.Popen(_nr,
                                       bufsize=0,

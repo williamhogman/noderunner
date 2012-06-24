@@ -56,9 +56,11 @@
                 m[data] = require(data);
                 return true;
             } else {
-                m[data[0]] = require(data[1]);
+                var md = require(data[1]);
+                m[data[0]] = md;
                 return true;
             }
+            return false;
         },
         "call": function(data) {
             var obj = traverse_js(data.path);
@@ -75,7 +77,11 @@
             lp.splice(path.length - 1,1);
             
             var  par = traverse_js(lp);
-            return obj.apply(par,data.args);
+            var ret =  obj.apply(par,data.args);
+            if(ret == null) {
+                return {$: "returned_null", value: null}
+            }
+            return ret;
         }
     }
 
@@ -87,7 +93,13 @@
             }
             write_object({resp_to: cmd_id, data: command_table[obj.kind](obj.data) });
         } catch (e) {
-            write_object({resp_to: cmd_id, err: {"message": e.message,"kind": e.name}});
+            try {
+                write_object({resp_to: cmd_id, err: {"message": e.message,"kind": e.name}});
+            } catch (ee) {
+
+                write_object({resp_to: cmd_id, err: ee});
+            }
+
         }
     }
 
