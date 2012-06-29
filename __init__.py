@@ -91,7 +91,7 @@ class Node(object):
             if err:
                 actual_cb(err=err)
             else:
-                actual_cb(data)
+                actual_cb(data=data)
         return _inner
         
     def eval(self,js,callback):
@@ -114,6 +114,15 @@ class Node(object):
         else:
             sendobj = [name,path]
         self._write_msg('require',sendobj,self._mkcb(callback))
+
+    def eval_async(self,js,callback):
+        if not js.strip():
+            callback(None)
+            return
+        self._write_msg('eval_async',js,self._mkcb(callback))
+
+    def call_async(self,fn,args,callback=None):
+        self._write_msg('call_async',dict(path=fn,args=args),self._mkcb(callback))
 
     def run(self):
         if not self._running:
@@ -158,6 +167,19 @@ class BlockingNode(object):
         self._node.require(name,path,callback=self._cb)
         self.wait()
         return self._results
+
+    def eval_async(self,name):
+        self._node.run()
+        self._node.eval_async(name,callback=self._cb)
+        self.wait()
+        return self._results
+
+    def call_async(self,name,*args):
+        self._node.run()
+        self._node.call_async(name,args,callback=self._cb)
+        self.wait()
+        return self._results
+        
 
 def call(*args,**kwargs):
     return BlockingNode.instance().call(*args,**kwargs)

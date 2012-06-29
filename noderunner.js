@@ -40,6 +40,27 @@
         },start);
     }
 
+    var callable_by_name = function(path) {
+        var obj = traverse_js(path);
+        
+        if(obj.apply == null) {
+            throw new Error("Is not callable");
+        }
+
+        if ( typeof path === 'string') {
+            path = path.split(".");
+        }
+
+        var lp = path.concat();
+        lp.splice(path.length - 1,1);
+        
+        var  par = traverse_js(lp);
+
+        return function(args) {
+            return obj.apply(par,args);
+        };
+    };
+
     var command_table = {
         "echo": function(data) { return data },
         "eval": function(data) {
@@ -63,25 +84,20 @@
             return false;
         },
         "call": function(data) {
-            var obj = traverse_js(data.path);
-            
-            if(obj.apply == null) {
-                throw new Error("Is not callable");
-            }
-
-            if ( typeof data.path === 'string') {
-                path = data.path.split(".");
-            }
-
-            var lp = path.concat();
-            lp.splice(path.length - 1,1);
-            
-            var  par = traverse_js(lp);
-            var ret =  obj.apply(par,data.args);
+            var ret = callable_by_name(data.path)(data.args);
             if(ret == null) {
                 return {$: "returned_null", value: null}
             }
             return ret;
+        },
+        "eval_async": function(callback,errback,data) {
+            // Compile
+            var fn = new Function(["nr_cb","nr_eb"],data);
+            fn.apply({},[callback,errback]);
+        },
+        "call_async": function(callback,errback,data) {
+            var fn = callable_by_name(data.path);
+            fn([callback,errback].concat(data.args));
         }
     }
 
@@ -91,7 +107,20 @@
             if(!obj.kind) {
                 throw new Error("Missing required parameter kind");
             }
-            write_object({resp_to: cmd_id, data: command_table[obj.kind](obj.data) });
+            var is_async = obj.kind.indexOf("async") != -1
+            if(!is_async) {
+                write_object({resp_to: cmd_id, data: command_table[obj.kind](obj.data) });
+            } else {
+                command_table[obj.kind](function(){
+                    var rtn = [].concat(arguments);
+                    write_object({resp_to: cmd_id, data: rtn});
+                }, function(){
+                    var rtn = [].concat(arguments);
+                    write_object({resp_to: cmd_id, err: rtn});
+                },obj.data);
+            }
+            
+
         } catch (e) {
             try {
                 write_object({resp_to: cmd_id, err: {"message": e.message,"kind": e.name}});
