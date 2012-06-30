@@ -11,6 +11,8 @@
     var stdin = process.openStdin();
     var stdout = process.stdout;
 
+    process.stdout = process.stderr;
+
     // send stdout to stderr which we don't care about...
     process.stdout = process.stderr;
     console.log = function() {

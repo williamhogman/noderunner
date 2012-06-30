@@ -53,7 +53,11 @@ class NodeProcess(object):
                 return
             else:
                 self._bfr = cmds[-1]
-                self._callback(imap(json.loads,cmds[0:-1]))
+                try:
+                    self._callback(imap(json.loads,cmds[0:-1]))
+                except:
+                    print("Crashed on {}".format(cmds))
+                    raise
         else:
             self._bfr = self._bfr + data
 
