@@ -12,13 +12,13 @@ import multiprocessing
 import tornado.ioloop
 
 
-
 _file = os.path.abspath(__file__)
 _folder = os.path.dirname(_file)
 
 _nr = os.path.join(_folder,"noderunner.js")
 
 _sep = "\0"
+
 
 class NodeProcess(object):
     def __init__(self,ioloop=tornado.ioloop.IOLoop.instance(),callback=None):
@@ -30,18 +30,20 @@ class NodeProcess(object):
                               "virtualenv","lib",
                               "node_modules")
         folder = os.path.abspath(folder)
-        os.environ['NODE_PATH'] = ":".join(os.environ['NODE_PATH'].split(":")+[folder])
+        os.environ['NODE_PATH'] = ":".join(
+            os.environ['NODE_PATH'].split(":") + [folder])
+
     def launch(self):
         self._proc = subprocess.Popen(_nr,
                                       bufsize=0,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE)
         self._ioloop.add_handler(self._proc.stdout.fileno(),
-                                self.read,
-                                self._ioloop.READ)
+                                 self.read,
+                                 self._ioloop.READ)
 
     def send(self,obj):
-        self._proc.stdin.write(json.dumps(obj)+_sep)
+        self._proc.stdin.write(json.dumps(obj) + _sep)
         self._proc.stdin.flush()
 
     def read(self,fd,event):
@@ -64,6 +66,7 @@ class NodeProcess(object):
     def stop(self):
         self._proc.terminate()
 
+
 class Node(object):
     def __init__(self):
         self._np = NodeProcess(callback=self._read)
@@ -82,8 +85,7 @@ class Node(object):
                     resp(data=obj['data'])
             elif 'status' in obj:
                 self._status = True
-            
-            
+
     def _write_msg(self,kind,data,callback):
         self._counter += 1
         c = self._counter
@@ -97,20 +99,19 @@ class Node(object):
             else:
                 actual_cb(data=data)
         return _inner
-        
+
     def eval(self,js,callback):
         # If we got a bunch of whitespace don't send it...
         if not js.strip():
             callback(None)
             return
         self._write_msg('eval',js,self._mkcb(callback))
-        
+
     def call(self,fn,args,callback):
         if not fn.strip():
             callback(None)
             return
         self._write_msg('call',dict(path=fn,args=args),self._mkcb(callback))
-        
 
     def require(self,name,path=None,callback=None):
         if path is None:
@@ -126,15 +127,18 @@ class Node(object):
         self._write_msg('eval_async',js,self._mkcb(callback))
 
     def call_async(self,fn,args,callback=None):
-        self._write_msg('call_async',dict(path=fn,args=args),self._mkcb(callback))
+        self._write_msg(
+            'call_async',dict(path=fn,args=args),self._mkcb(callback))
 
     def run(self):
         if not self._running:
             self._np.launch()
             self._running = True
-    
+
+
 class BlockingNode(object):
     _instance = None
+
     def __init__(self):
         self._node = Node()
         self.il = tornado.ioloop.IOLoop.instance()
@@ -183,13 +187,15 @@ class BlockingNode(object):
         self._node.call_async(name,args,callback=self._cb)
         self.wait()
         return self._results
-        
+
 
 def call(*args,**kwargs):
     return BlockingNode.instance().call(*args,**kwargs)
 
+
 def eval(*args,**kwargs):
     return BlockingNode.instance().eval(*args,**kwargs)
+
 
 def require(*args,**kwargs):
     return BlockingNode.instance().require(*args,**kwargs)
