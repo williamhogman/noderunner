@@ -69,14 +69,14 @@ class TestProtocol(object):
         p._authed = True
 
         def fn():
-            time.sleep(0)
+            time.sleep(0.001)
             p._loop()
 
         th = threading.Thread(target=fn)
         th.start()
 
         args = dict(somearg=sentinel.somearg)
-        ret = p.request_sync(sentinel.mtd, **args)
+        ret = p.request_sync(sentinel.mtd, timeout=1, **args)
 
         eq_(ret, "foo")
         con.send_packet.assert_called_once_with(MSG_REQUEST, {
@@ -84,6 +84,7 @@ class TestProtocol(object):
             "action": sentinel.mtd,
             "args": args
             })
+        th.join()
 
     def test_request_async(self):
         con = self._with_pck((MSG_RESPONSE, self._response_data))
@@ -91,7 +92,7 @@ class TestProtocol(object):
         p = Protocol(con, "foo")
         p._authed = True
 
-        args = dict(someearg=sentinel.somearg)
+        args = dict(somearg=sentinel.somearg)
         handle = p.request(sentinel.mtd, **args)
 
         p._loop()

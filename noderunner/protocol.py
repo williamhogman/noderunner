@@ -102,7 +102,7 @@ class Protocol(object):
     def request_sync(self, action, timeout=10, **kwargs):
         reqid = self._perform_request(action, kwargs)
 
-        val = self._rmgr.await(reqid,timeout=timeout)
+        val = self._rmgr.await(reqid, timeout=timeout)
         return val
 
     def request(self, action, **kwargs):
@@ -114,12 +114,15 @@ class Protocol(object):
 
 # 3.1>= and 2.7>= have an atomic wait function
 if (six.PY3 and sys.version_info[1] >= 1) or (sys.version_info[1] >= 7):
+
     def _event_wait(event, timeout):
          if event.wait(timeout):
              return True
          else:
              raise RuntimeError("Timed out waiting for event")
+
 else: # very unlikely to go wrong but felt better to use the correct version aboove
+
     def _event_wait(event, timeout):
         event.wait(timeout)
         if event.is_set():
