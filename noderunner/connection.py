@@ -18,7 +18,9 @@ class Connection(object):
     _version = 1
 
     def __init__(self, socket):
-        self._socket = socket
+        self._act_socket = socket
+        self._socket = socket.makefile("r+", 0)
+
         self._run = True
 
 
@@ -27,7 +29,6 @@ class Connection(object):
         if not version in self._supported_versions:
             raise RuntimeError("Unsupported protocol version {0}"
                                .format(version))
-
         return mtype, n
 
     def _read_body(self, n):
@@ -42,7 +43,15 @@ class Connection(object):
         n = len(enc)
         hdr = header.pack(self._version, kind, n)
         self._socket.write(hdr + enc)
+        self._socket.flush()
 
     def packets(self):
         while self._run and not self._socket.closed:
             yield self.read_packet()
+
+    def stop(self):
+        self._run = False
+
+    def force_stop(self):
+        self._run = False
+        self._socket.close()

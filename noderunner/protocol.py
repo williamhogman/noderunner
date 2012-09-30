@@ -2,6 +2,7 @@
 import sys
 import threading
 import functools
+import time
 
 import six
 
@@ -42,21 +43,30 @@ class Protocol(object):
             MSG_AUTH_RESP: self._on_auth_resp,
             MSG_RESPONSE: self._on_response
         }
-        self._req_conunter = _RequestCounter()
+        self._req_counter = _RequestCounter()
         self._rmgr = ResponseManager()
 
     @property
     def authenticated(self):
         return self._authed
 
+    def _launch_thread(self):
+        th = threading.Thread(target=self._loop)
+        th.start()
+
+        self._th = th
+
+
+
     def _loop(self):
         for method, body in self._connection.packets():
+            print(method, body)
             fn = self._dispatch.get(method, None)
             if not fn:
                 raise RuntimeError("Couldn't find handler for method {0}"
                                    .format(method))
             fn(body)
-
+            time.sleep(0)
     def _send(self, msgid, body):
         self._connection.send_packet(msgid, body)
 
@@ -80,7 +90,13 @@ class Protocol(object):
         self._rmgr.arrived(our_id, msg)
 
     def start(self):
-        self._send(MSG_HELLO, dict(hello="hello"))
+        self._send(MSG_HELLO, dict(hello="hello"))        
+        self._launch_thread()
+
+    def stop(self):
+        self._connection.stop()
+        self._th.join(3)
+        self._connection.force_stop()
 
     def _send_request(self, action, reqid, args):
         data = dict(reqid=reqid, action=action, args=args)
@@ -92,7 +108,7 @@ class Protocol(object):
         if not self._authed:
             raise RuntimeError("Not authenticated")
 
-        reqid = self._req_conunter()
+        reqid = self._req_counter()
         # Mark id as pending
         self._rmgr.pending(reqid)
         self._send_request(action, reqid, args)
