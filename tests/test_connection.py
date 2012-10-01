@@ -57,6 +57,14 @@ class TestConnection(object):
         eq_(stream.getvalue(),
             six.b('\x01\x01\x00\x00\x00\x00\x00\r"Hello World"'))
 
+    def test_send_packet_escaping(self):
+        stream = six.BytesIO()
+        c = Connection(stream)
+
+        c.send_packet(1, """"Hello World""""")
+        eq_(stream.getvalue(),
+            six.b('\x01\x01\x00\x00\x00\x00\x00\x0f"\\"Hello World"'))
+
     def test_packets(self):
         s, stream = self._with_data(self._dummy_msg)
 

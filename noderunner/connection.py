@@ -46,7 +46,7 @@ class Connection(object):
         return method, self._read_body(n)
 
     def send_packet(self, kind, body):
-        enc = bytes(six.u(json.dumps(body)).encode("utf8"))
+        enc = bytes(json.dumps(body).encode("utf8"))
         n = len(enc)
         hdr = header.pack(self._version, kind, n)
         self._socket.write(hdr + enc)
