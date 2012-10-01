@@ -5,9 +5,7 @@ import subprocess
 import os
 import os.path
 import json
-import threading
 from itertools import imap
-import multiprocessing
 
 import tornado.ioloop
 
