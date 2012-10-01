@@ -1,19 +1,10 @@
-import noderunner as nr
+import noderunner
 
 
 def main():
-    bn = nr.BlockingNode()
-    line = str()
-    print("NodeRunner REPL")
-    while True:
-        line = raw_input(">")
-        if line == ":quit":
-            break
-        res,error = bn.eval(line)
-        if res:
-            print(res)
-        elif error:
-            print(error)
+    client = noderunner.Client()
+    ret = client.eval("10+10")
+    print(ret)
 
 if __name__ == "__main__":
     main()
