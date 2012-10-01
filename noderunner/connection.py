@@ -2,15 +2,9 @@
 from __future__ import absolute_import
 import json
 import struct
-import socket
 
+import gevent.socket
 import six
-
-if six.PY3:
-    _socket_class = socket.socket
-else:
-    _socket_class = socket.SocketType
-
 
 # A message comprises of two parts
 # the Header which is 8 bits long consists of:
@@ -28,7 +22,7 @@ class Connection(object):
 
     def __init__(self, socket):
         # Use file-likes instead of socket-like objects
-        if isinstance(socket, _socket_class):
+        if isinstance(socket, gevent.socket.socket):
             self._act_socket = socket
             self._socket = socket.makefile("r+", 0)
         else:
