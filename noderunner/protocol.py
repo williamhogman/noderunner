@@ -1,7 +1,6 @@
 """Module implementing the noderunner protocol"""
 import sys
 import functools
-import time
 
 import six
 
@@ -69,6 +68,7 @@ class Protocol(object):
                                    .format(method))
             fn(body)
 
+
     def _send(self, msgid, body):
         self._connection.send_packet(msgid, body)
 
@@ -99,8 +99,8 @@ class Protocol(object):
 
     def stop(self):
         self._connection.stop()
-        self._th.join(3)
-        self._connection.force_stop()
+        self._th.join(1)
+        self._th.kill()
 
     def _send_request(self, action, reqid, args):
         data = dict(reqid=reqid, action=action, args=args)

@@ -53,12 +53,13 @@ class Connection(object):
         self._socket.flush()
 
     def packets(self):
-        while self._run and not self._socket.closed:
-            yield self.read_packet()
+        try:
+            while self._run and not self._socket.closed:
+                yield self.read_packet()
+        finally:
+            self._socket.close()
+
 
     def stop(self):
+        """Tells the packets loop to stop, after reading this packet"""
         self._run = False
-
-    def force_stop(self):
-        self._run = False
-        self._socket.close()
