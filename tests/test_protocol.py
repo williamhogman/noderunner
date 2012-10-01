@@ -1,6 +1,6 @@
 """Tests for the protocol module"""
-import threading
 import time
+import gevent
 from mock import Mock, patch, sentinel
 from nose.tools import ok_, eq_, raises
 
@@ -72,7 +72,7 @@ class TestProtocol(object):
             time.sleep(0.001)
             p._loop()
 
-        th = threading.Thread(target=fn)
+        th = gevent.Greenlet(fn)
         th.start()
 
         args = dict(somearg=sentinel.somearg)
@@ -109,7 +109,7 @@ class TestProtocol(object):
 
 
 class TestResponseManager(object):
-    @raises(RuntimeError)
+    @raises(gevent.Timeout)
     def test_timeout(self):
         r = ResponseManager()
 
@@ -132,7 +132,7 @@ class TestResponseManager(object):
             time.sleep(0)
             r.arrived(100, sentinel.foo)
 
-        th = threading.Thread(target=fn)
+        th = gevent.Greenlet(fn)
         th.start()
         ret = r.await(100, 1)
         th.join(1)

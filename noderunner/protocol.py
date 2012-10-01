@@ -1,10 +1,13 @@
 """Module implementing the noderunner protocol"""
 import sys
-import threading
 import functools
 import time
 
 import six
+
+import gevent
+import gevent.coros
+import gevent.event
 
 import noderunner.crypto
 import noderunner.objects
@@ -24,7 +27,7 @@ MGS_EVENT = ord("E")
 class _RequestCounter(object):
     def __init__(self, initial_value=0):
         self._val = initial_value
-        self._lock = threading.Lock()
+        self._lock = gevent.coros.Semaphore()
 
     def __call__(self):
         with self._lock:
@@ -38,7 +41,7 @@ class Protocol(object):
         self._connection = connection
         self._secret = secret
         self._authed = False
-        self._authed_event = threading.Event()
+        self._authed_event = gevent.event.Event()
         self._dispatch = {
             MSG_CHALLENGE: self._on_challenge,
             MSG_AUTH_RESP: self._on_auth_resp,
@@ -52,22 +55,20 @@ class Protocol(object):
         return self._authed
 
     def _launch_thread(self):
-        th = threading.Thread(target=self._loop)
+        th = gevent.Greenlet(self._loop)
         th.start()
 
         self._th = th
 
-
-
     def _loop(self):
         for method, body in self._connection.packets():
-            print(method, body)
+            print("python got" ,method, body)
             fn = self._dispatch.get(method, None)
             if not fn:
                 raise RuntimeError("Couldn't find handler for method {0}"
                                    .format(method))
             fn(body)
-            time.sleep(0)
+
     def _send(self, msgid, body):
         self._connection.send_packet(msgid, body)
 
@@ -133,49 +134,25 @@ class Protocol(object):
 
         return handle
 
-# 3.1>= and 2.7>= have an atomic wait function
-if (six.PY3 and sys.version_info[1] >= 1) or (sys.version_info[1] >= 7):
-
-    def _event_wait(event, timeout):
-         if event.wait(timeout):
-             return True
-         else:
-             raise RuntimeError("Timed out waiting for event")
-
-else: # very unlikely to go wrong but felt better to use the correct version aboove
-
-    def _event_wait(event, timeout):
-        event.wait(timeout)
-        if event.is_set():
-            return True
-        else:
-            raise RuntimeError("Timed out waiting for event")
-
-
 class ResponseManager(object):
 
     def __init__(self):
         self._events = dict()
-        self._responses = dict()
 
     def _cleanup(self, msgid):
         if msgid in self._events:
             del self._events[msgid]
-        if msgid in self._responses:
-            del self._responses[msgid]
 
     def pending(self, msgid):
-        self._events[msgid] = threading.Event()
+        self._events[msgid] = gevent.event.AsyncResult()
 
     def await(self, msgid, timeout=10):
         """Awaits a message with the passed in id"""
         try:
-            _event_wait(self._events[msgid], timeout)
-            return self._responses[msgid]
+            return self._events[msgid].get(timeout)
         finally:
             self._cleanup(msgid)
 
     def arrived(self, msgid, contents):
         """Signals the arrival of a message with a given id"""
-        self._responses[msgid] = contents
-        self._events[msgid].set()
+        self._events[msgid].set(contents)
