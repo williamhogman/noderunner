@@ -24,8 +24,37 @@ var create_requirements_obj = function(requirements) {
   return o;
 };
 
+var basic_context_obj = function(){
+  return {
+    global: global,
+    require: require,
+    setTimeout: setTimeout,
+    setInterval: setInterval,
+    clearInterval: clearInterval,
+    clearTimeout: clearTimeout,
+    console: console
+  }
+};
+
+// extend the obj (first parameter)
+var extend = function(obj) {
+  // for each other parameter
+  Array.prototype.forEach.call(Array.prototype.slice.call(arguments, 1), function(source) {
+    // loop through all properties of the other objects
+    for (var prop in source) {
+      // if the property is not undefined then add it to the object.
+      if (source[prop] !== void 0) obj[prop] = source[prop];
+    }
+  });
+  // return the object (first parameter)
+  return obj;
+};
+
+
 var create_context = function(requirements) {
-  return vm.createContext(create_requirements_obj(requirements))
+  var req = create_requirements_obj(requirements || []);
+  var ctx = extend(req, basic_context_obj())
+  return vm.createContext(ctx);
 };
 
 module.exports.mkcontext = function(data, resp) {
@@ -65,7 +94,7 @@ module.exports.eval = function(data, resp) {
       return;
     }
   } else {
-    context = vm.createContext({"require": require});
+    context = create_context()
   }
 
 
