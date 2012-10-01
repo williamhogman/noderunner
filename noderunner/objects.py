@@ -18,6 +18,10 @@ def from_js(kind, obj):
         return obj
     elif kind == "err":
         return JSError(obj.get("name"), obj.get("message"))
+    elif kind == "undefined":
+        # Undefined !== null in javascript,
+        # In python we have to go with this solution
+        return None
 
 
     raise RuntimeError("Unknown js object kind {0}".format(kind))

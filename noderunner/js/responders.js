@@ -100,7 +100,11 @@ module.exports.eval = function(data, resp) {
 
   try {
     var res = script.runInContext(context);
-    resp(res);
+    if (res === undefined) {
+      resp(null, "undefined");
+    } else {
+      resp(res);
+    }
     return;
   } catch (ex) {
     resp(ex, "err");
