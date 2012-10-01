@@ -1,5 +1,8 @@
+"use strict";
 (function(){
-  console.log("This is noderunner!")
+  var Connection = require("./connection");
+  var Protocol = require("./protocol");
+  var responders = require("./responders");
   var net = require("net");
   var fd, filename;
 
@@ -13,19 +16,13 @@
 
   if (secret == "__NO_AUTH__") {
     secret = null;
-    console.log("no auth mode");
   }
 
-  var Connection = require("./connection");
-  var Protocol = require("./protocol");
-  var responders = require("./responders");
   
   var mk_socket = function() {
     if (fd) {
-      console.log("using passed in fd!")
       return new net.Socket({fd: fd, type: "unix"})    
     } else {
-      console.log("using path to named socket")
       var socket = new net.Socket({type: "unix"})
       socket.connect(filename);
       return socket;
@@ -39,10 +36,6 @@
     var p = new Protocol(c, secret);
 
     p.on("eval", responders.eval);
-    p.on("lefoo", function(data, resp){
-      console.log("yay");
-      resp("booyeah!");
-    });
   };
 
   run();

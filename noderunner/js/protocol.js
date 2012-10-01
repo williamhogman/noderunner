@@ -32,8 +32,6 @@
         data = {name: data.name, message: data.message}
       }
       var body = {"response_to": reqid, "type": type || "json", "obj": data};
-      console.log("node responding with", body);
-
       protocol._send(messages.response, body)
     };
   }
@@ -78,7 +76,6 @@
   };
 
   Protocol.prototype._on_pck = function(type, body){
-    console.log("node got", type, body);
     var fn = this._dispatch[type];
     if(fn) {
       fn.call(this, body);

@@ -1,9 +1,10 @@
+"use strict";
 (function(){
   var assert = require("assert"),
   EventEmitter = require("events").EventEmitter,
   util = require("util");
 
-  Connection = function(stream){
+  var Connection = function(stream){
     EventEmitter.call(this);
     this.stream = stream;
     
