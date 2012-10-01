@@ -94,7 +94,7 @@ class Protocol(object):
         self._rmgr.arrived(our_id, msg)
 
     def start(self):
-        self._send(MSG_HELLO, dict(hello="hello"))        
+        self._send(MSG_HELLO, dict(hello="hello"))
         self._launch_thread()
 
     def stop(self):
