@@ -117,6 +117,13 @@ class TestResponseManager(object):
 
         r.await(100, 0)
 
+    @raises(RuntimeError)
+    def test_set_exception(self):
+        r = ResponseManager()
+        r.pending(100)
+        r.set_exception(100, RuntimeError("foo"))
+        r.await(100)
+
     def test_arrive_instant(self):
         r = ResponseManager()
         r.pending(100)

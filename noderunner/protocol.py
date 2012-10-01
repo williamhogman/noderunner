@@ -89,8 +89,11 @@ class Protocol(object):
 
     def _on_response(self, body):
         our_id = body["response_to"]
-        msg = noderunner.objects.from_js(body["type"], body["obj"])
-        self._rmgr.arrived(our_id, msg)
+        try:
+            msg = noderunner.objects.from_js(body["type"], body["obj"])
+            self._rmgr.arrived(our_id, msg)
+        except Exception as ex:
+            self._rmgr.set_exception(our_id, ex)
 
     def start(self):
         self._send(MSG_HELLO, dict(hello="hello"))
@@ -155,3 +158,6 @@ class ResponseManager(object):
     def arrived(self, msgid, contents):
         """Signals the arrival of a message with a given id"""
         self._events[msgid].set(contents)
+
+    def set_exception(self, msgid, exc):
+        self._events[msgid].set_exception(exc)
