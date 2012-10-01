@@ -18,13 +18,13 @@ from noderunner.connection import Connection
 class TestProtocol(object):
     _response_data = dict(response_to=1, type="json", obj="foo")
 
-    def _connection(self):
+    def _connection(self, packets=[]):
         mck = Mock(spec=Connection)
+        mck.packets.return_value = packets
         return mck
 
     def _with_pck(self, *pcks):
-        con = self._connection()
-        con.packets.return_value = pcks
+        con = self._connection(packets=pcks)
         return con
 
     def test_start(self):
