@@ -8,6 +8,16 @@ class JSError(Exception):
     def __str__(self):
         return "JsError:{0}: {1}".format(self._name, self._message)
 
+class _Undefined():
+    """Class representing undefined objects"""
+    def __str__(self):
+        return "undefined"
+
+    def __repr__(self):
+        return "noderunner.objects.Undefined"
+
+Undefined = _Undefined()
+
 def from_js(kind, obj):
     """Converts JS objects to python objects
 
@@ -21,7 +31,7 @@ def from_js(kind, obj):
     elif kind == "undefined":
         # Undefined !== null in javascript,
         # In python we have to go with this solution
-        return None
+        return Undefined
 
 
     raise RuntimeError("Unknown js object kind {0}".format(kind))
