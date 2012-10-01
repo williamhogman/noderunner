@@ -1,5 +1,13 @@
 """Module containing methods for converting JavaScript object into python objects and vice versa"""
 
+class JSError(Exception):
+    def __init__(self, name, message):
+        self._name = name
+        self._message = message
+
+    def __str__(self):
+        return "JsError:{0}: {1}".format(self._name, self._message)
+
 def from_js(kind, obj):
     """Converts JS objects to python objects
 
@@ -8,5 +16,8 @@ def from_js(kind, obj):
     """
     if kind == "json":
         return obj
+    elif kind == "err":
+        return JSError(obj.get("name"), obj.get("message"))
+
 
     raise RuntimeError("Unknown js object kind {0}".format(kind))
