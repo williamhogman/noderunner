@@ -61,7 +61,6 @@ class Protocol(object):
 
     def _loop(self):
         for method, body in self._connection.packets():
-            print("python got" ,method, body)
             fn = self._dispatch.get(method, None)
             if not fn:
                 raise RuntimeError("Couldn't find handler for method {0}"
