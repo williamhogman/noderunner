@@ -11,6 +11,7 @@ tramp
 
 .*
 !.gitignore
+!.travis.yml
 *~
 
 *.py[cod]
