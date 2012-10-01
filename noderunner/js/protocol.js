@@ -31,6 +31,11 @@
       if (data instanceof Error){
         data = {name: data.name, message: data.message}
       }
+      // undefined should be converted to make sure that it is
+      // included in the response.
+      if (data === undefined) {
+        data = null;
+      }
       var body = {"response_to": reqid, "type": type || "json", "obj": data};
       protocol._send(messages.response, body)
     };
