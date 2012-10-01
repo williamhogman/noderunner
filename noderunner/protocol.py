@@ -38,6 +38,7 @@ class Protocol(object):
         self._connection = connection
         self._secret = secret
         self._authed = False
+        self._authed_event = threading.Event()
         self._dispatch = {
             MSG_CHALLENGE: self._on_challenge,
             MSG_AUTH_RESP: self._on_auth_resp,
@@ -83,6 +84,8 @@ class Protocol(object):
     def _on_auth_resp(self, body):
         status = body.get("status", False)
         self._authed = bool(status)
+        if self._authed:
+            self._authed_event.set()
 
     def _on_response(self, body):
         our_id = body["response_to"]
@@ -106,7 +109,9 @@ class Protocol(object):
 
     def _perform_request(self, action, args):
         if not self._authed:
-            raise RuntimeError("Not authenticated")
+            self._authed_event.wait()
+            if not self._authed:
+                raise RuntimeError("Not authenticated")
 
         reqid = self._req_counter()
         # Mark id as pending
