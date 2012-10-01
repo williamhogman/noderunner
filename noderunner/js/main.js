@@ -18,6 +18,7 @@
 
   var Connection = require("./connection");
   var Protocol = require("./protocol");
+  var responders = require("./responders");
   
   var mk_socket = function() {
     if (fd) {
@@ -36,6 +37,8 @@
     var sck = mk_socket();
     var c = new Connection(sck);
     var p = new Protocol(c, secret);
+
+    p.on("eval", responders.eval);
     p.on("lefoo", function(data, resp){
       console.log("yay");
       resp("booyeah!");

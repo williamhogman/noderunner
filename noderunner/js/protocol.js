@@ -27,9 +27,13 @@
   }
 
   var make_responder_fn = function(protocol, reqid) {
-    return function(data){
-      var body = {"response_to": reqid, "type": "json", "obj": data};
-      console.log("node responding with", body)
+    return function(data, type){
+      if (data instanceof Error){
+        data = {name: data.name, message: data.message}
+      }
+      var body = {"response_to": reqid, "type": type || "json", "obj": data};
+      console.log("node responding with", body);
+
       protocol._send(messages.response, body)
     };
   }
