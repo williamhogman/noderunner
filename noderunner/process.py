@@ -12,7 +12,6 @@ def _find_mainjs():
 def _run_node(nodepath="node", *args):
     to_call = [nodepath, _find_mainjs()]
     to_call.extend(map(str, args))
-    print(to_call)
     return subprocess.Popen(to_call, bufsize=0)
 
 def open_process(server_fd, secret, nodepath="node"):
