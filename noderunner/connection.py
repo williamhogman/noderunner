@@ -1,7 +1,16 @@
 """Module containing classes and functions related to connctions"""
-import six
-import struct
+from __future__ import absolute_import
 import json
+import struct
+import socket
+
+import six
+
+if six.PY3:
+    _socket_class = socket.socket
+else:
+    _socket_class = socket.SocketType
+
 
 # A message comprises of two parts
 # the Header which is 8 bits long consists of:
@@ -18,8 +27,12 @@ class Connection(object):
     _version = 1
 
     def __init__(self, socket):
-        self._act_socket = socket
-        self._socket = socket.makefile("r+", 0)
+        # Use file-likes instead of socket-like objects
+        if isinstance(socket, _socket_class):
+            self._act_socket = socket
+            self._socket = socket.makefile("r+", 0)
+        else:
+            self._socket = socket
 
         self._run = True
 
