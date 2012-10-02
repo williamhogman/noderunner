@@ -107,6 +107,34 @@ class TestProtocol(object):
             "args": args
             })
 
+    @raises(RuntimeError)
+    def test_wait_for_auth_fail(self):
+        con = self._connection()
+        p = Protocol(con, "foo")
+        p._authed = False
+        p._authed_event.set()
+
+        p._wait_for_auth()
+
+    def test_wait_for_auth(self):
+        con = self._connection()
+        p = Protocol(con, "foo")
+        p._authed = True
+        p._authed_event.set()
+
+        p._wait_for_auth()
+
+    def test_stop(self):
+        con = self._connection()
+        p = Protocol(con, "foo")
+        th = p._th = Mock()
+
+        p.stop()
+
+        con.stop.assert_called_once()
+        th.join.assert_called_once()
+        th.kill.assert_called_once()
+
 
 class TestResponseManager(object):
     @raises(gevent.Timeout)
