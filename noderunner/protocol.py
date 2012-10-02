@@ -120,11 +120,16 @@ class Protocol(object):
 
         return reqid
 
-    def _perform_request(self, action, args):
+    def _wait_for_auth(self):
+        if self._authed:
+            return
+
+        self._authed_event.wait()
         if not self._authed:
-            self._authed_event.wait()
-            if not self._authed:
-                raise RuntimeError("Not authenticated")
+            raise RuntimeError("Not authenticated")
+
+    def _perform_request(self, action, args):
+        self._wait_for_auth()
 
         reqid = self._req_counter()
         # Mark id as pending
