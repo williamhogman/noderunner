@@ -1,23 +1,20 @@
-.. NodeRunner documentation master file, created by
-   sphinx-quickstart on Tue Oct  2 21:34:29 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to NodeRunner's documentation!
+NodeRunner
 ======================================
+NodeRunner is a python library that lets you use Node.JS libraries
+from Python. NodeRunner aims to provide a feature rich pythonic
+interface for writing code that uses node.js in python. You can use it
+to create things like build-scripts etc.
 
-Contents:
+You probably want to checkout the :doc:`getting-started` section and our :doc:`api-doc`.
+
+Contents
+=========
 
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: noderunner
-   :members:
-
-.. autoclass:: Client
-   :members:
-
-
+   getting-started
+   api-doc
 
 Indices and tables
 ==================
