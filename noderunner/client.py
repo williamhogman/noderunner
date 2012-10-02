@@ -6,7 +6,7 @@ from noderunner.socket import get_sockets
 
 
 class Client(object):
-    """ Primary class for interfacing with node
+    """Primary class for interfacing with node
 
     The client class provides an easy to use interface for calling
     node functions, handling context and requirements.
@@ -35,6 +35,10 @@ class Client(object):
         Evaluates the passed in string as JavaScript code. This code
         may optionally be run in a context.
 
+        :param code: The code to be evaluated
+        :type code: str.
+        :param context: Name of the context to run the code in.
+        :type context: str.
         :return: The result of evaluating the expression, as best
                  represented in python.
         """
@@ -53,7 +57,13 @@ class Client(object):
         pre-included, the context will have it's own global object
         making it hard to interfere with other things running in node.
 
-        :return: a context object for interfacing with it"""
+        :param name: Name of the context to be created
+        :type name: str.
+        :param reqs: The names of the requirements to be loaded into
+                     the context.
+        :type reqs: list.
+        :return: a context object for interfacing with it
+        """
         name = self._proto.request_sync("mkcontext",
                                         name=name,
                                         requirements=reqs)
