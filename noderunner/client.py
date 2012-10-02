@@ -4,6 +4,7 @@ from noderunner.protocol import Protocol
 from noderunner.process import open_process
 from noderunner.socket import get_sockets
 
+
 class Client(object):
 
     def __init__(self, secured=False):
@@ -22,9 +23,26 @@ class Client(object):
                                None if not self._secured else secret)
         self._proto.start()
 
-    def eval(self, code):
-        return self._proto.request_sync("eval", code=code)
+    def eval(self, code, context=None):
+        return self._proto.request_sync("eval", code=code, context=context)
 
     def stop(self):
         self._proto.stop()
         self._proc.terminate()
+
+    def context(self, name, reqs=[]):
+        name = self._proto.request_sync("mkcontext",
+                                        name=name,
+                                        requirements=reqs)
+        return Context(self, name)
+
+
+class Context(object):
+    """A context in which certain commands such as eval can be run"""
+
+    def __init__(self, client, name):
+        self._client = client
+        self._name = name
+
+    def eval(self, code):
+        return self._client.eval(code, context=self._name)
