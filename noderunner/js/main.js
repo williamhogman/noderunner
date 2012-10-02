@@ -36,6 +36,7 @@
     var p = new Protocol(c, secret);
 
     p.on("eval", responders.eval);
+    p.on("mkcontext", responders.mkcontext);
   };
 
   run();
