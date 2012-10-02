@@ -1,5 +1,5 @@
 MANIFEST
-
+doc/_build/
 # gitignores from github/gitignore
 *~
 \#*\#
