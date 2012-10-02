@@ -37,6 +37,8 @@ class _RequestCounter(object):
 
 
 class Protocol(object):
+    """Handles messages going through a connection"""
+
     def __init__(self, connection, secret):
         """Takes a connection"""
         self._connection = connection
@@ -53,6 +55,7 @@ class Protocol(object):
 
     @property
     def authenticated(self):
+        """True if the connection is authenticated"""
         return self._authed
 
     def _launch_thread(self):
@@ -68,7 +71,6 @@ class Protocol(object):
                 raise RuntimeError("Couldn't find handler for method {0}"
                                    .format(method))
             fn(body)
-
 
     def _send(self, msgid, body):
         self._connection.send_packet(msgid, body)
@@ -98,10 +100,16 @@ class Protocol(object):
             self._rmgr.set_exception(our_id, ex)
 
     def start(self):
+        """Setups the connection
+
+        Starts the connection, sending the hello message and starting
+        the reading thread
+        """
         self._send(MSG_HELLO, dict(hello="hello"))
         self._launch_thread()
 
     def stop(self):
+        """Stops the connection and kills the reading thread"""
         self._connection.stop()
         self._th.join(1)
         self._th.kill()
@@ -126,19 +134,41 @@ class Protocol(object):
         return reqid
 
     def request_sync(self, action, timeout=10, **kwargs):
+        """Performs a request and waits for the response
+
+        Takes the passed in action and the kwargs and performs a
+        request. Waiting at most timeout seconds before returning.
+
+        :param action: The name action to call in the javascript responder.
+        :param timeout: The time to wait before we timeout.
+        :type action: str
+        :type timeout: int, float
+        :returns: The value included in the response
+        """
         reqid = self._perform_request(action, kwargs)
 
         val = self._rmgr.await(reqid, timeout=timeout)
         return val
 
     def request(self, action, **kwargs):
+        """Performs a request without waiting for a response
+
+        Takes the passed in action and the kwargs and performs a
+        request. Returns a function that when called waits for the
+        request to complete.
+
+        :param action: The name action to call in the javascript responder.
+        :returns: function that when called awaits the response.
+        """
         reqid = self._perform_request(action, kwargs)
 
         handle = functools.partial(self._rmgr.await, reqid)
 
         return handle
 
+
 class ResponseManager(object):
+    """Manages responses as they arrive"""
 
     def __init__(self):
         self._events = dict()
@@ -148,6 +178,7 @@ class ResponseManager(object):
             del self._events[msgid]
 
     def pending(self, msgid):
+        """Marks a message id as pending, making it waitable and writeable"""
         self._events[msgid] = gevent.event.AsyncResult()
 
     def await(self, msgid, timeout=10):
@@ -162,4 +193,5 @@ class ResponseManager(object):
         self._events[msgid].set(contents)
 
     def set_exception(self, msgid, exc):
+        """Sets an in the message causing it to be raised in the waiting thread"""
         self._events[msgid].set_exception(exc)
