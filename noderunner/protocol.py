@@ -11,6 +11,8 @@ import gevent.event
 import noderunner.crypto
 import noderunner.objects
 
+__all__ = ["Protocol"]
+
 # Initialization
 MSG_HELLO = ord('h')
 MSG_CHALLENGE = ord('C')
