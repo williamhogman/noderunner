@@ -42,7 +42,8 @@ if on_rtd:
             else:
                 return Mock()
 
-    MOCK_MODULES = ['gevent']
+    MOCK_MODULES = ['gevent', 'gevent.socket',
+                    'gevent.coros', 'gevent.event']
     for mod_name in MOCK_MODULES:
         sys.modules[mod_name] = Mock()
 
