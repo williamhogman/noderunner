@@ -35,6 +35,9 @@ class _Undefined():
     def __repr__(self):
         return "noderunner.objects.Undefined"
 
+    def __nonzero__(self):
+        return False
+
 Undefined = _Undefined()
 
 def from_js(kind, obj):
@@ -51,6 +54,5 @@ def from_js(kind, obj):
         # Undefined !== null in javascript,
         # In python we have to go with this solution
         return Undefined
-
 
     raise RuntimeError("Unknown js object kind {0}".format(kind))
