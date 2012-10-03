@@ -8,12 +8,24 @@ their own class of python exceptions.
 
 
 class JSError(Exception):
+    """Python reprsentation of Javascript Errors"""
     def __init__(self, name, message):
         self._name = name
         self._message = message
 
+    @property
+    def name(self):
+        """The name of the JavaScript exception"""
+        return self._name
+
+    @property
+    def message(self):
+        """The JavaScript error message"""
+        return self._message
+
     def __str__(self):
         return "JsError:{0}: {1}".format(self._name, self._message)
+
 
 class _Undefined():
     """Class representing undefined objects"""
