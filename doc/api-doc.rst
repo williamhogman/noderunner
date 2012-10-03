@@ -11,3 +11,6 @@ functionality.
 
 .. autoclass:: Client
    :members:
+
+.. autoclass:: Context
+   :members:

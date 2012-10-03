@@ -36,9 +36,9 @@ class Client(object):
         may optionally be run in a context.
 
         :param code: The code to be evaluated
-        :type code: str.
+        :type code: str
         :param context: Name of the context to run the code in.
-        :type context: str.
+        :type context: str
         :return: The result of evaluating the expression, as best
                  represented in python.
         """
@@ -58,11 +58,12 @@ class Client(object):
         making it hard to interfere with other things running in node.
 
         :param name: Name of the context to be created
-        :type name: str.
+        :type name: str
         :param reqs: The names of the requirements to be loaded into
                      the context.
-        :type reqs: list.
-        :return: a context object for interfacing with it
+        :type reqs: list
+        :return: a context object for the passed in name.
+        :rtype: :class:`Context`
         """
         name = self._proto.request_sync("mkcontext",
                                         name=name,
@@ -71,11 +72,25 @@ class Client(object):
 
 
 class Context(object):
-    """A context in which certain commands such as eval can be run"""
+    """A context in which certain commands such as eval can be run
+
+    You almost never need to create a context this way, instead use
+    the context function on your client object.
+    """
 
     def __init__(self, client, name):
         self._client = client
         self._name = name
 
     def eval(self, code):
+        """Evaluates the code in this context.
+
+        Evaluates the passed in string and returns the result, the
+        code will be evaluated in the context named in this instance.
+
+        :param code: The code to be evaluated
+        :type code: str
+        :return: The result of evaluating the expression, as best
+                 represented in python.
+        """
         return self._client.eval(code, context=self._name)
