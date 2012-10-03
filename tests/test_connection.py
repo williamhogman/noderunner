@@ -2,7 +2,7 @@
 import six
 from mock import Mock
 import io
-from nose.tools import ok_, eq_, raises
+from nose.tools import ok_, eq_, raises, timed
 
 from noderunner.connection import Connection
 
@@ -91,3 +91,12 @@ class TestConnection(object):
         c = Connection(mck)
 
         mck.makefile.assert_called_once()
+
+    @timed(1)
+    def test_stop(self):
+        s = self._socket()
+        c = Connection(s)
+        c.stop()
+        # no packets should ever be returned after stoping
+        # and it should return instantly
+        eq_(list(c.packets()), [])
