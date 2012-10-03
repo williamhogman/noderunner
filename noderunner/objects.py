@@ -1,4 +1,11 @@
-"""Module containing methods for converting JavaScript object into python objects and vice versa"""
+"""Module for converting JavaScript objects into Python objects and vice-versa
+
+This module is used for translating various objects into more
+meaningful representations in both langauges. In the case of
+JavaScript errors, for example, this means translating them into a
+their own class of python exceptions.
+"""
+
 
 class JSError(Exception):
     def __init__(self, name, message):
