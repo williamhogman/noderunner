@@ -1,7 +1,7 @@
 import six
 from mock import Mock, sentinel
 import io
-from nose.tools import ok_, eq_, raises, timed
+from nose.tools import ok_, eq_, raises, timed, raises
 
 from noderunner.objects import from_js, JSError, Undefined
 
@@ -20,8 +20,12 @@ class TestFromJS(object):
         eq_(ret.message, sentinel.message)
 
     def test_undefined(self):
-        ret = from_js("undefined",sentinel.whatever)
+        ret = from_js("undefined", sentinel.whatever)
         eq_(ret, Undefined)
+
+    @raises(RuntimeError)
+    def test_invalid_type(self):
+        from_js(sentinel.invalid_kind, {})
 
 def test_undefined():
     eq_(bool(Undefined), False)
