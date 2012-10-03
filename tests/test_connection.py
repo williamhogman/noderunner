@@ -83,3 +83,11 @@ class TestConnection(object):
         c = Connection(s)
 
         six.next(c.packets())
+
+    def test_start_with_socket(self):
+        import gevent.socket as s
+        mck = Mock(spec=s.socket)
+
+        c = Connection(mck)
+
+        mck.makefile.assert_called_once()
