@@ -12,7 +12,7 @@ var create_requirements_obj = function(requirements) {
   var o = {};
   requirements.forEach(function(val){
     var name, lib;
-    if(val.isList()) {
+    if(Array.isArray(val)) {
       name = val[0];
       lib = require(val[1]);
     } else {
