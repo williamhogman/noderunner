@@ -86,6 +86,11 @@ class Client(object):
         """
         return self._proto.request_sync("get", path=path, context=context)
 
+    def set(self, path, val, context):
+        return self._proto.request_sync("set", path=path,
+                                        value=val,
+                                        context=context)
+
 class Context(object):
     """A context in which certain commands such as eval can be run
 
@@ -124,3 +129,8 @@ class Context(object):
         :rtype: :class:`JSError` or a JavaScript object.
         """
         return self._client.get(path, self._name)
+
+    def set(self, *args):
+        args = list(args)
+        val = args.pop()
+        return self._client.set(args, val, self._name)
