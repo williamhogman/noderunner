@@ -65,11 +65,6 @@ var traverse_obj = function(obj, path){
   return ptr;
 };
 
-var get_context_global = function(context, name){
-  var script = vm.createScript(name);
-  return script.runInContext(context);
-};
-
 module.exports.get =  function(data, resp){
   var context;
   if(!data.context) {
@@ -91,25 +86,8 @@ module.exports.get =  function(data, resp){
   }
   path = data.path;
 
-  var first = path.shift();
-  if(!first) {
-    resp(error("Argument", "Invalid path argument"), "err");
-    return;
-  }
+  var ptr = traverse_obj(context, path);
 
-
-  var initial;
-  try {
-    initial = get_context_global(context, first);
-  } catch (ex) {
-    resp(ex, "err");
-    return;
-  }
-
-  var ptr = traverse_obj(initial, path);
-
-
-  console.log(ptr);
   resp(ptr);
 };
 
