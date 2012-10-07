@@ -70,6 +70,8 @@ class Client(object):
                                         requirements=reqs)
         return Context(self, name)
 
+    def get(self, path, context):
+        return self._proto.request_sync("get", path=path, context=context)
 
 class Context(object):
     """A context in which certain commands such as eval can be run
@@ -94,3 +96,6 @@ class Context(object):
                  represented in python.
         """
         return self._client.eval(code, context=self._name)
+
+    def get(self, *path):
+        return self._client.get(path, self._name)
