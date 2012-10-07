@@ -57,6 +57,62 @@ var create_context = function(requirements) {
   return vm.createContext(ctx);
 };
 
+var traverse_obj = function(obj, path){
+  var tmp, ptr = obj;
+  while(tmp = path.shift()) {
+    ptr = ptr[tmp];
+  }
+  return ptr;
+};
+
+var get_context_global = function(context, name){
+  var script = vm.createScript(name);
+  return script.runInContext(context);
+};
+
+module.exports.get =  function(data, resp){
+  var context;
+  if(!data.context) {
+    resp(error("Argument", "Missing required argument context"), "err");
+    return;
+  }
+
+  context = contexts[data.context];
+  if(!context) {
+    resp(error("Argument", "No such context"), "err");
+    return;
+  }
+
+
+  var path;
+  if(!data.path) {
+    resp(error("Argument", "Missing required argument path"), "err");
+    return;
+  }
+  path = data.path;
+
+  var first = path.shift();
+  if(!first) {
+    resp(error("Argument", "Invalid path argument"), "err");
+    return;
+  }
+
+
+  var initial;
+  try {
+    initial = get_context_global(context, first);
+  } catch (ex) {
+    resp(ex, "err");
+    return;
+  }
+
+  var ptr = traverse_obj(initial, path);
+
+
+  console.log(ptr);
+  resp(ptr);
+};
+
 module.exports.mkcontext = function(data, resp) {
   if (!data.name) {
     resp(error("Argument","Missing required argument data"), "err");
