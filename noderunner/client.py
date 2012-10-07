@@ -71,6 +71,19 @@ class Client(object):
         return Context(self, name)
 
     def get(self, path, context):
+        """Gets the value of a javascript variable.
+
+        Gets the value of a Javascript name/object path in the given
+        context. The passed in path should be a list containing the
+        path to the value that you want to read. For example a list
+        with the elements 'console' and 'log' corresponds to
+        "console.log".
+
+        :param path: The path to the value to be retrived.
+        :type path: list
+        :return: The value of the object that the path points to.
+        :rtype: :class:`JSError` or a JavaScript object.
+        """
         return self._proto.request_sync("get", path=path, context=context)
 
 class Context(object):
@@ -98,4 +111,16 @@ class Context(object):
         return self._client.eval(code, context=self._name)
 
     def get(self, *path):
+        """Gets the value of a javascript variable.
+
+        Takes several any number of arguments each representing one
+        part of the path. For example calling this function with two
+        arguments, "console" and "log" returns the value of
+        console.log in javascript.
+
+        :param path: The path to the value to be retrived.
+        :type path: list
+        :return: The value of the object that the path points to.
+        :rtype: :class:`JSError` or a JavaScript object.
+        """
         return self._client.get(path, self._name)
