@@ -91,6 +91,42 @@ module.exports.get =  function(data, resp){
   resp(ptr);
 };
 
+module.exports.set = function(data, resp) {
+  var context;
+  if(!data.context) {
+    resp(error("Argument", "Missing required argument context"), "err");
+    return;
+  }
+
+  context = contexts[data.context];
+  if(!context) {
+    resp(error("Argument", "No such context"), "err");
+    return;
+  }
+
+
+  if(!data.value) {
+    resp(error("Argument", "Missing required argument value"), "err");
+    return;
+  }
+
+  var value = data.value;
+
+  var path;
+  if(!data.path) {
+    resp(error("Argument", "Missing required argument path"), "err");
+    return;
+  }
+  path = data.path;
+
+  var to_set = path.pop();
+
+  var ptr = traverse_obj(context, path);
+
+  ptr[to_set] = value;
+  return resp(ptr[to_set]);
+};
+
 module.exports.mkcontext = function(data, resp) {
   if (!data.name) {
     resp(error("Argument","Missing required argument data"), "err");
