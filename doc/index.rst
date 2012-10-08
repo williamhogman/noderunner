@@ -15,6 +15,7 @@ Contents
 
    getting-started
    api-doc
+   examples
 
 Indices and tables
 ==================
