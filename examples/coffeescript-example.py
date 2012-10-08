@@ -1,25 +1,20 @@
 """Example showing how to use coffeescript with noderunner
 """
-
-import json
-
 from noderunner import Client
 
-code = """
-
-test_fn = -> console.log('foo')
-
-"""
+code = """test_fn = -> console.log('foo')"""
 
 
 def main():
     cli = Client()
 
-    ctx = cli.context("lol", [["cs", "coffee-script"]])
-    ctx.eval("var code = "+json.dumps(code)+";")
-    
-    ret = ctx.eval("cs.compile(code)")
-    print ret
+    ctx = cli.context("example", [("cs", "coffee-script")])
+
+    ctx.set("code", code)
+
+    res = ctx.eval("cs.compile(code)")
+
+    print(res)
 
 
 if __name__ == "__main__":
