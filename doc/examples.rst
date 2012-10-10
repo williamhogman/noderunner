@@ -7,7 +7,7 @@ missing examples feel free to submit pull requests including new ones.
 
 
 Calling the CoffeeScript compiler
----------------------
+----------------------------------
 
 .. literalinclude:: ../examples/coffeescript-example.py
     :language: python
