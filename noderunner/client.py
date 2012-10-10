@@ -20,7 +20,7 @@ class Client(object):
     def _start(self):
         serv, cli, clifd = get_sockets()
         secret = "__NO_AUTH__"
-        if self._secured:
+        if self._secured: # pragma: nocover
             raise RuntimeError("Secure connections are not supported yet")
 
         self._proc = open_process(clifd, secret)
