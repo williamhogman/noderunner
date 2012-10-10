@@ -87,6 +87,28 @@ class Client(object):
         return self._proto.request_sync("get", path=path, context=context)
 
     def set(self, path, val, context):
+        """Sets the value of a javascript variable.
+
+        Sets the value of a Javascript name/object path in the given
+        context. The passed in path should be a list containing the
+        path to teh value that you wish to set. For example a list
+        with the elements 'console' and 'log' corresponds to
+        "console.log". The new value has to be a convertable to JSON
+        and thus javascript. Therefore nested dicts are fine but other
+        objects will fail.
+
+        :param path: The path to the value to be retrived.
+        :type path: list
+        :param val: The value to that the path should be set to
+        :type val: int, str, list, tuple, dict, their subclasses
+                   and nested structures comprising of these.
+
+        :param context: The context to run the command in.
+        :type context: str
+
+        :return: The changed value as it is represented in JavaScript.
+        :rtype: A JavaScript object.
+        """
         return self._proto.request_sync("set", path=path,
                                         value=val,
                                         context=context)
@@ -118,12 +140,12 @@ class Context(object):
     def get(self, *path):
         """Gets the value of a javascript variable.
 
-        Takes several any number of arguments each representing one
-        part of the path. For example calling this function with two
+        Takes any number of arguments each representing one part of
+        the path. For example calling this function with two
         arguments, "console" and "log" returns the value of
         console.log in javascript.
 
-        :param path: The path to the value to be retrived.
+        :param *path: The path to the value to be retrived.
         :type path: list
         :return: The value of the object that the path points to.
         :rtype: :class:`JSError` or a JavaScript object.
@@ -131,6 +153,19 @@ class Context(object):
         return self._client.get(path, self._name)
 
     def set(self, *args):
+        """Sets the value of a javascript variable.
+
+        Takes any number of arguments where all but the last one
+        represents a part of the object path. The last argument is the
+        value to set the value to. The function returns the value as
+        it is represented in JavaScript.
+
+        :param *path: All but the last argument represent the path.
+                      The last argument is the value to set the path to.
+
+        :return: The value that the object at the path was set to.
+        :rtype: :class:`JSError` or A JavaScript object.
+        """
         args = list(args)
         val = args.pop()
         return self._client.set(args, val, self._name)
