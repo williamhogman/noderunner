@@ -10,9 +10,7 @@ def main():
 
     ctx = cli.context("example", [("cs", "coffee-script")])
 
-    ctx.set("code", code)
-
-    res = ctx.eval("cs.compile(code)")
+    res = ctx.call("cs", "compile", (code,))
 
     print(res)
 
