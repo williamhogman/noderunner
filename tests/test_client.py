@@ -72,6 +72,17 @@ class TestClient(object):
                                                value=sentinel.val,
                                                context=sentinel.context)
 
+    def test_call(self):
+        c, proto, con, proc, sock = self._client()
+
+        c.call(sentinel.path, sentinel.args, sentinel.context)
+
+        p = proto.return_value
+        p.request_sync.assert_called_once_with("call",
+                                               path=sentinel.path,
+                                               args=sentinel.args,
+                                               context=sentinel.context)
+
 
 class TestContext(object):
 
@@ -102,3 +113,11 @@ class TestContext(object):
         mck.set.assert_called_once_with(ANY,
                                         sentinel.value,
                                         sentinel.name)
+
+    def test_call(self):
+        mck, context = self._context()
+
+        context.call(sentinel.path, sentinel.args)
+        mck.call.assert_called_once_with(ANY,
+                                         sentinel.args,
+                                         sentinel.name)
