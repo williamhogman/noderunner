@@ -170,7 +170,7 @@ class Context(object):
         arguments, "console" and "log" returns the value of
         console.log in javascript.
 
-        :param *path: The path to the value to be retrived.
+        :param \*path: The path to the value to be retrived.
         :type path: list
         :return: The value of the object that the path points to.
         :rtype: :class:`JSError` or a JavaScript object.
@@ -185,7 +185,7 @@ class Context(object):
         value to set the value to. The function returns the value as
         it is represented in JavaScript.
 
-        :param *path: All but the last argument represent the path.
+        :param \*path: All but the last argument represent the path.
                       The last argument is the value to set the path to.
 
         :return: The value that the object at the path was set to.
@@ -208,9 +208,9 @@ class Context(object):
         convertable to JSON, that represent the arguments to call the
         function with.
 
-        :param *args: All but the last argument represent the path.
+        :param \*args: All but the last argument represent the path.
                       The last argument should contain the arguments.
-        :type *args: list
+        :type \*args: list
 
         :return: The value returned by the function.
         :rtype: A JavaScript object.
