@@ -127,6 +127,42 @@ module.exports.set = function(data, resp) {
   return resp(ptr[to_set]);
 };
 
+module.exports.call = function(data, resp) {
+  if(!data.context) {
+    resp(error("Argument", "Missing required argument context"), "err");
+    return;
+  }
+
+  var context = contexts[data.context];
+  if(!context) {
+    resp(error("Argument", "No such context"), "err");
+    return;
+  }
+
+
+  if(!data.args && data.args.length) {
+    resp(error("Argument", "Missing required argument args"), "err");
+    return;
+  }
+
+  var value = data.value;
+
+  var path;
+  if(!data.path) {
+    resp(error("Argument", "Missing required argument path"), "err");
+    return;
+  }
+
+  path = data.path;
+
+  var fn_name = path.pop();
+
+  var ptr = traverse_obj(context, path);
+
+  var ret = ptr[fn_name].apply(ptr, data.args);
+  return resp(ret);
+}
+
 module.exports.mkcontext = function(data, resp) {
   if (!data.name) {
     resp(error("Argument","Missing required argument data"), "err");
@@ -137,8 +173,12 @@ module.exports.mkcontext = function(data, resp) {
     data.requirements = [];
   }
 
-  contexts[data.name] = create_context(data.requirements);
-  return resp(data.name);
+  try {
+    contexts[data.name] = create_context(data.requirements);
+    return resp(data.name);
+  } catch(ex) {
+    return resp(ex, "err");
+  }
 }
 
 module.exports.eval = function(data, resp) {
