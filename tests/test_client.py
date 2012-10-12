@@ -1,8 +1,7 @@
 from mock import Mock, patch, ANY, sentinel
 from nose.tools import ok_, eq_, raises, timed
 
-from noderunner import Client, Context
-
+from noderunner.client import Client, Context, Handle
 from noderunner.connection import Connection
 from noderunner.protocol import Protocol
 
@@ -121,3 +120,71 @@ class TestContext(object):
         mck.call.assert_called_once_with(ANY,
                                          sentinel.args,
                                          sentinel.name)
+
+    def test_objects(self):
+        mck, context = self._context()
+
+        handle = context.objects
+
+        eq_(handle._context, context)
+
+
+class TestHandle(object):
+
+    def test_call(self):
+        ctx = Mock()
+        ctx.call.return_value = sentinel.rtn
+
+        h = Handle(ctx)
+
+        eq_(h(sentinel.foo), sentinel.rtn)
+
+        ctx.call.assert_called_once_with((sentinel.foo,))
+
+    def test_attr_access(self):
+        ctx = Mock()
+
+        h = Handle(ctx)
+
+        handle2 = h.foobar
+
+        eq_(handle2._path, ["foobar"])
+
+    def test_item_access(self):
+        ctx = Mock()
+
+        h = Handle(ctx)
+
+        handle2 = h["foobar"]
+
+        eq_(handle2._path, ["foobar"])
+
+    def test_access_context_stays(self):
+        ctx = Mock()
+        h = Handle(ctx)
+        handle2 = h.foobar
+        eq_(handle2._context, ctx)
+
+    def test_get(self):
+        ctx = Mock()
+        ctx.get.return_value = sentinel.get
+
+        h = Handle(ctx)
+
+        eq_(h.get(), sentinel.get)
+
+        ctx.get.assert_called_once_with()
+
+    def test_attr_set(self):
+        ctx = Mock()
+        h = Handle(ctx)
+
+        h.key = sentinel.val
+        ctx.set.assert_called_once_with("key", sentinel.val)
+
+    def test_item_set(self):
+        ctx = Mock()
+        h = Handle(ctx)
+
+        h["key"] = sentinel.val
+        ctx.set.assert_called_once_with("key", sentinel.val)
