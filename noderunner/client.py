@@ -196,6 +196,25 @@ class Context(object):
         return self._client.set(args, val, self._name)
 
     def call(self, *args):
+        """Calls the function at path with the passed-in args
+
+        Calls the function specified by the path using the passed in
+        arguments. Functions are always called in the context of the
+        next to last part of the path. This ensures that the calling
+        ["console","log"] is called in the context of console. The
+        arguments should be a list or tuple each containing an object
+        that is covertable to JSON. The last argument to this function
+        should be a collection containing items, all of which are
+        convertable to JSON, that represent the arguments to call the
+        function with.
+
+        :param *args: All but the last argument represent the path.
+                      The last argument should contain the arguments.
+        :type *args: list
+
+        :return: The value returned by the function.
+        :rtype: A JavaScript object.
+        """
         args = list(args)
         fn_args = args.pop()
         return self._client.call(args, fn_args, self._name)
