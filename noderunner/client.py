@@ -218,3 +218,71 @@ class Context(object):
         args = list(args)
         fn_args = args.pop()
         return self._client.call(args, fn_args, self._name)
+
+    @property
+    def objects(self):
+        """Returns a handle pointing the context global object.
+
+        Retruns a handle that points the the global object or root
+        object of this context. This is the recommended way to get a
+        handle for interfacing with context.
+        """
+        return Handle(self)
+
+
+class Handle(object):
+    """A handle is an object representing the path to some value.
+
+    Handles are used for calling JavaScript code in a pythonic way.
+    This is acheieved using the overridable magic methods provided in
+    Python.
+
+    Accessing an attribute that is not a member of the handle
+    class returns a handle pointing to that object. For example
+    accessing root.console.log, where root points to the global object
+    in a context. Cuasing root to returns handle object pointing to
+    console, and this object, in turn gives a reference to log.
+
+    Calling a handle will call the object that it points to returning
+    the value returned by the javascript function.
+    """
+
+    __slots__ = ("_path", "_context")
+
+    def __init__(self, context, path=[]):
+        self._context = context
+        self._path = path
+
+    def __getattr__(self, name):
+        return Handle(self._context, self._path + [name])
+
+    def __setattr__(self, name, value):
+        if name in self.__slots__:
+            super(Handle, self).__setattr__(name, value)
+        else:
+            self.__set(name, value)
+
+    def __set(self, name, value):
+        set_args = list(self._path) + [name, value]
+        return self._context.set(*set_args)
+
+    def get(self):
+        """Gets the value that the handle points to
+
+        Performs a NodeRunner get operation returning the value that
+        the handle points to.
+
+        :returns: The JavaScript value that the handle points at
+        :rtype: A JavaScript object
+        """
+        return self._context.get(*self._path)
+
+    def __str__(self):
+        return "Handle: " + ".".join(self._path)
+
+    def __call__(self, *args):
+        call_args = list(self._path) + [args]
+        return self._context.call(*call_args)
+
+    __getitem__ = __getattr__
+    __setitem__ = __set
