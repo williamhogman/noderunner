@@ -9,8 +9,11 @@ functionality.
 .. automodule:: noderunner
    :members:
 
-.. autoclass:: Client
+.. autoclass:: noderunner.Client
    :members:
 
-.. autoclass:: Context
+.. autoclass:: noderunner.client.Context
+   :members:
+
+.. autoclass:: noderunner.client.Handle
    :members:
