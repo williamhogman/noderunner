@@ -11,5 +11,5 @@ setup(name="noderunner",
       url="http://whn.se/noderunner",
       package_dir={"noderunner": "noderunner"},
       package_data={"noderunner": ["js/*.js"]},
-      install_requires=["gevent"],
+      install_requires=["gevent", "six"],
 )
